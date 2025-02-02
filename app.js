@@ -78,42 +78,46 @@ function loadExpenses(data) {
   console.log("Spese ordinate:", expenses);
 }
 
-// Caricamento dei coefficienti con precisione massima
-function loadCoefficients(data) {
-  coefficients = {};
-  for (let i = 0; i < data.length; i++) {
-    let row = data[i];
-    if (row.length < 7) continue;
-    let key = parseFloat(row[0].replace('.', '').replace(',', '.'));
-    if (isNaN(key)) continue;
-    
-    coefficients[key] = {
-      12: parseFloat(row[1].replace('%', '').replace(',', '.')) / 100 || 0,
-      18: parseFloat(row[2].replace('%', '').replace(',', '.')) / 100 || 0,
-      24: parseFloat(row[3].replace('%', '').replace(',', '.')) / 100 || 0,
-      36: parseFloat(row[4].replace('%', '').replace(',', '.')) / 100 || 0,
-      48: parseFloat(row[5].replace('%', '').replace(',', '.')) / 100 || 0,
-      60: parseFloat(row[6].replace('%', '').replace(',', '.')) / 100 || 0
-    };
+// Calcolo della rata con coefficiente ad alta precisione
+function calculateRent() {
+  let importo = parseFloat(document.getElementById("importo").value);
+  let durata = parseInt(document.getElementById("durata").value);
+
+  if (!importo || !durata) {
+    alert("Inserisci un importo e seleziona una durata.");
+    return;
   }
-  console.log("Coefficienti caricati con precisione massima:", coefficients);
-}
 
-// Seleziona il coefficiente corretto con precisione
-function getCoefficientForAmount(amount, duration) {
-  const keys = Object.keys(coefficients).map(Number).sort((a, b) => a - b);
-  if (keys.length === 0) return null;
+  let coeff = getCoefficientForAmount(importo, durata);
+  if (!coeff) {
+    alert("Dati mancanti per l'importo selezionato. Carica un file CSV valido.");
+    return;
+  }
 
-  let selectedKey = keys[0];
-  for (let i = 0; i < keys.length; i++) {
-    if (amount >= keys[i]) {
-      selectedKey = keys[i];
-    } else {
-      break;
+  let rataMensile = (importo * coeff).toFixed(10);
+
+  let speseContratto = 0;
+  if (Object.keys(expenses).length > 0) {
+    let expenseKeys = Object.keys(expenses).map(Number).sort((a, b) => a - b);
+    let selectedExpenseKey = expenseKeys[0];
+    for (let k of expenseKeys) {
+      if (importo >= k) {
+        selectedExpenseKey = k;
+      } else {
+        break;
+      }
     }
+    speseContratto = expenses[selectedExpenseKey] || 0;
   }
 
-  console.log("Importo:", amount, "Coefficiente esatto da:", selectedKey, "Durata:", duration, "Valore preciso:", coefficients[selectedKey][duration]);
+  let costoGiornaliero = (rataMensile / 22).toFixed(10);
+  let costoOrario = (costoGiornaliero / 8).toFixed(10);
 
-  return coefficients[selectedKey]?.[duration] || null;
+  console.log("Importo:", importo, "Rata Mensile precisa:", rataMensile, "Spese selezionate:", speseContratto);
+  console.log("Costo Giornaliero preciso:", costoGiornaliero, "Costo Orario preciso:", costoOrario);
+
+  document.getElementById("rataMensile").textContent = parseFloat(rataMensile).toFixed(2) + " €";
+  document.getElementById("speseContratto").textContent = speseContratto.toFixed(2) + " €";
+  document.getElementById("costoGiornaliero").textContent = parseFloat(costoGiornaliero).toFixed(2) + " €";
+  document.getElementById("costoOrario").textContent = parseFloat(costoOrario).toFixed(2) + " €";
 }
