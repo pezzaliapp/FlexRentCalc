@@ -11,6 +11,11 @@ self.addEventListener("install", (event) => {
             ]);
         })
     );
+    self.skipWaiting(); // Forza l'attivazione immediata del nuovo service worker
+});
+
+self.addEventListener("activate", (event) => {
+    event.waitUntil(self.clients.claim()); // Garantisce il controllo immediato della PWA da parte del nuovo SW
 });
 
 self.addEventListener("fetch", (event) => {
