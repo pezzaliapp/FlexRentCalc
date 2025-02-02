@@ -1,78 +1,86 @@
 <!DOCTYPE html>
 <html lang="it">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FlexRentCalc</title>
-    <link rel="stylesheet" href="style.css">
-    <link rel="manifest" href="manifest.json">
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            text-align: center;
-            max-width: 500px;
-            margin: auto;
-            padding: 20px;
-        }
-
-        button, select, input {
-            width: 100%;
-            padding: 10px;
-            margin: 10px 0;
-            font-size: 16px;
-        }
-
-        h1 {
-            font-size: 22px;
-            color: #008000;
-        }
-
-        .hidden {
-            display: none;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FlexRentCalc</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="manifest" href="manifest.json">
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      max-width: 500px;
+      margin: auto;
+      padding: 20px;
+    }
+    button, select, input {
+      width: 100%;
+      padding: 10px;
+      margin: 10px 0;
+      font-size: 16px;
+    }
+    h1 {
+      font-size: 22px;
+      color: #008000;
+    }
+    .hidden {
+      display: none;
+    }
+  </style>
 </head>
 <body>
-    <h1>FlexRentCalc</h1>
+  <h1>FlexRentCalc</h1>
 
-    <h3>Carica i file di coefficienti e spese</h3>
-    <label>Coefficienti BCC:</label>
-    <input type="file" id="fileCoefficients" accept=".xlsx">
-    <button onclick="importCoefficients()">Carica Coefficienti</button>
+  <h3>Carica i file di coefficienti e spese</h3>
+  
+  <!-- Input nascosto per i coefficienti (accetta solo CSV) -->
+  <input type="file" id="fileCoefficients" accept=".csv" class="hidden">
+  <button onclick="importCoefficients()">Carica Coefficienti</button>
+  
+  <!-- Input nascosto per le spese (accetta solo CSV) -->
+  <input type="file" id="fileExpenses" accept=".csv" class="hidden">
+  <button onclick="importExpenses()">Carica Spese</button>
 
-    <label>Spese di Contratto:</label>
-    <input type="file" id="fileExpenses" accept=".xlsx">
-    <button onclick="importExpenses()">Carica Spese</button>
+  <h2>Seleziona la durata</h2>
+  <select id="durata">
+    <option value="12">12 mesi</option>
+    <option value="18">18 mesi</option>
+    <option value="24">24 mesi</option>
+    <option value="36">36 mesi</option>
+    <option value="48">48 mesi</option>
+    <option value="60">60 mesi</option>
+  </select>
 
-    <h2>Seleziona la durata</h2>
-    <select id="durata">
-        <option value="12">12 mesi</option>
-        <option value="18">18 mesi</option>
-        <option value="24">24 mesi</option>
-        <option value="36">36 mesi</option>
-        <option value="48">48 mesi</option>
-        <option value="60">60 mesi</option>
-    </select>
+  <h2>Inserisci Importo</h2>
+  <input type="number" id="importo" placeholder="Inserisci importo">
 
-    <h2>Inserisci Importo</h2>
-    <input type="number" id="importo" placeholder="Inserisci importo">
+  <button onclick="calculateRent()">Calcola Noleggio</button>
 
-    <button onclick="calculateRent()">Calcola Noleggio</button>
+  <h2>Risultati</h2>
+  <p>Rata Mensile: <span id="rataMensile">-</span></p>
+  <p>Spese Contratto: <span id="speseContratto">-</span></p>
+  <p>Costo Giornaliero: <span id="costoGiornaliero">-</span></p>
+  <p>Costo Orario: <span id="costoOrario">-</span></p>
 
-    <h2>Risultati</h2>
-    <p>Rata Mensile: <span id="rataMensile">-</span></p>
-    <p>Spese Contratto: <span id="speseContratto">-</span></p>
-    <p>Costo Giornaliero: <span id="costoGiornaliero">-</span></p>
-    <p>Costo Orario: <span id="costoOrario">-</span></p>
+  <!-- Se usi la libreria XLSX per altri scopi, puoi lasciarla; altrimenti, rimuovila -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  <script src="app.js"></script>
+  <script>
+    // Funzioni per attivare il click sugli input file nascosti
+    function importCoefficients() {
+      document.getElementById('fileCoefficients').click();
+    }
+    function importExpenses() {
+      document.getElementById('fileExpenses').click();
+    }
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-    <script src="app.js"></script>
-    <script>
-        if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.register('./service-worker.js')
-                .then(() => console.log('Service Worker registrato!'))
-                .catch(err => console.error('Errore Service Worker:', err));
-        }
-    </script>
+    // Registrazione del Service Worker
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('./service-worker.js')
+        .then(() => console.log('Service Worker registrato!'))
+        .catch(err => console.error('Errore Service Worker:', err));
+    }
+  </script>
 </body>
 </html>
