@@ -13,8 +13,23 @@ function importCoefficients() {
         const data = new Uint8Array(event.target.result);
         const workbook = XLSX.read(data, { type: "array" });
         const sheet = workbook.Sheets[workbook.SheetNames[0]];
-        coefficients = XLSX.utils.sheet_to_json(sheet, { header: 1 });
-        alert("Coefficienti caricati!");
+        const jsonData = XLSX.utils.sheet_to_json(sheet, { header: 1 });
+
+        coefficients = {};
+        for (let i = 2; i < jsonData.length; i++) {
+            let row = jsonData[i];
+            let importo = row[1];
+            if (!importo || isNaN(importo)) continue;
+            coefficients[importo] = {
+                12: row[2],
+                18: row[3],
+                24: row[4],
+                36: row[5],
+                48: row[6],
+                60: row[7]
+            };
+        }
+        alert("Coefficienti caricati correttamente!");
     };
     reader.readAsArrayBuffer(file);
 }
