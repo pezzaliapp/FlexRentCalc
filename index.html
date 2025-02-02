@@ -34,11 +34,10 @@
 
   <h3>Carica i file di coefficienti e spese</h3>
   
-  <!-- Input nascosto per i coefficienti (accetta solo CSV) -->
+  <!-- Input file nascosti: accettano solo file CSV -->
   <input type="file" id="fileCoefficients" accept=".csv" class="hidden">
   <button onclick="importCoefficients()">Carica Coefficienti</button>
   
-  <!-- Input nascosto per le spese (accetta solo CSV) -->
   <input type="file" id="fileExpenses" accept=".csv" class="hidden">
   <button onclick="importExpenses()">Carica Spese</button>
 
@@ -63,8 +62,8 @@
   <p>Costo Giornaliero: <span id="costoGiornaliero">-</span></p>
   <p>Costo Orario: <span id="costoOrario">-</span></p>
 
-  <!-- Se usi la libreria XLSX per altri scopi, puoi lasciarla; altrimenti, rimuovila -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  <!-- Includi PapaParse -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
   <script src="app.js"></script>
   <script>
     // Funzioni per attivare il click sugli input file nascosti
@@ -75,7 +74,7 @@
       document.getElementById('fileExpenses').click();
     }
 
-    // Registrazione del Service Worker
+    // Registrazione del Service Worker (se presente)
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker.register('./service-worker.js')
         .then(() => console.log('Service Worker registrato!'))
