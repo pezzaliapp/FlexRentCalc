@@ -17,7 +17,14 @@
     <div id="manualEntry" style="display: none;">
         <h2>Inserisci Coefficienti</h2>
         <input type="number" id="importo" placeholder="Importo">
-        <input type="number" id="durata" placeholder="Durata in mesi">
+        <select id="durata">
+            <option value="12">12 mesi</option>
+            <option value="18">18 mesi</option>
+            <option value="24">24 mesi</option>
+            <option value="36">36 mesi</option>
+            <option value="48">48 mesi</option>
+            <option value="60">60 mesi</option>
+        </select>
         <input type="number" id="coefficiente" placeholder="Coefficiente">
         <button onclick="addCoefficient()">Aggiungi</button>
     </div>
@@ -28,6 +35,7 @@
     <p>Costo Giornaliero: <span id="costoGiornaliero">-</span></p>
     <p>Costo Orario: <span id="costoOrario">-</span></p>
 
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <script src="app.js"></script>
     <script>
         if ('serviceWorker' in navigator) {
