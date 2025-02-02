@@ -2,6 +2,7 @@
 <html lang="it">
 <head>
   <meta charset="UTF-8">
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>FlexRentCalc</title>
   <link rel="stylesheet" href="style.css">
@@ -66,6 +67,15 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
   <script src="app.js"></script>
   <script>
+    // Questo script cancella tutte le cache ad ogni caricamento della pagina
+    if ('caches' in window) {
+      caches.keys().then(cacheNames => {
+        cacheNames.forEach(cacheName => {
+          caches.delete(cacheName);
+        });
+      });
+    }
+
     // Funzioni per attivare il click sugli input file nascosti
     function importCoefficients() {
       document.getElementById('fileCoefficients').click();
@@ -74,7 +84,7 @@
       document.getElementById('fileExpenses').click();
     }
 
-    // Registrazione del Service Worker (se presente)
+    // Registrazione del Service Worker
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker.register('./service-worker.js')
         .then(() => console.log('Service Worker registrato!'))
