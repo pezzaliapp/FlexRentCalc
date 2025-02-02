@@ -14,6 +14,7 @@
       max-width: 500px;
       margin: auto;
       padding: 20px;
+      transition: background-color 0.3s, color 0.3s;
     }
     button, select, input {
       width: 100%;
@@ -25,6 +26,10 @@
       font-size: 22px;
       color: #008000;
     }
+    .dark-mode {
+      background-color: #333;
+      color: #f1f1f1;
+    }
     .hidden {
       display: none;
     }
@@ -33,16 +38,20 @@
 <body>
   <h1>FlexRentCalc</h1>
 
-  <h3>Carica i file di coefficienti e spese</h3>
-  
-  <!-- Input file nascosti: accettano solo file CSV -->
+  <h3>Carica i file CSV</h3>
+  <!-- File per i coefficienti -->
   <input type="file" id="fileCoefficients" accept=".csv" class="hidden">
-  <button onclick="importCoefficients()">Carica Coefficienti</button>
+  <button onclick="triggerFile('fileCoefficients')">Carica Coefficienti</button>
   
+  <!-- File per le spese -->
   <input type="file" id="fileExpenses" accept=".csv" class="hidden">
-  <button onclick="importExpenses()">Carica Spese</button>
+  <button onclick="triggerFile('fileExpenses')">Carica Spese</button>
 
-  <h2>Seleziona la durata</h2>
+  <h2>Inserisci Importo</h2>
+  <!-- L'input è di tipo text per poter gestire anche formattazioni (es. "4.500,00 €") -->
+  <input type="text" id="importo" placeholder="Inserisci importo (es. 4.500,00 €)">
+
+  <h2>Seleziona la Durata</h2>
   <select id="durata">
     <option value="12">12 mesi</option>
     <option value="18">18 mesi</option>
@@ -52,9 +61,6 @@
     <option value="60">60 mesi</option>
   </select>
 
-  <h2>Inserisci Importo</h2>
-  <input type="number" id="importo" placeholder="Inserisci importo">
-
   <button onclick="calculateRent()">Calcola Noleggio</button>
 
   <h2>Risultati</h2>
@@ -62,33 +68,25 @@
   <p>Spese Contratto: <span id="speseContratto">-</span></p>
   <p>Costo Giornaliero: <span id="costoGiornaliero">-</span></p>
   <p>Costo Orario: <span id="costoOrario">-</span></p>
-
-  <!-- Includi PapaParse -->
+  
+  <button id="darkModeToggle">Toggle Modalità Scura</button>
+  
+  <!-- Includi PapaParse per il parsing CSV -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
   <script src="app.js"></script>
   <script>
-    // Questo script cancella tutte le cache ad ogni caricamento della pagina
+    // Semplice funzione per simulare il click sugli input file nascosti
+    function triggerFile(id) {
+      document.getElementById(id).click();
+    }
+    
+    // Cancellazione della cache (se usata, ad esempio per il service worker)
     if ('caches' in window) {
       caches.keys().then(cacheNames => {
         cacheNames.forEach(cacheName => {
           caches.delete(cacheName);
         });
       });
-    }
-
-    // Funzioni per attivare il click sugli input file nascosti
-    function importCoefficients() {
-      document.getElementById('fileCoefficients').click();
-    }
-    function importExpenses() {
-      document.getElementById('fileExpenses').click();
-    }
-
-    // Registrazione del Service Worker
-    if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('./service-worker.js')
-        .then(() => console.log('Service Worker registrato!'))
-        .catch(err => console.error('Errore Service Worker:', err));
     }
   </script>
 </body>
