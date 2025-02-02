@@ -6,6 +6,27 @@
     <title>FlexRentCalc</title>
     <link rel="stylesheet" href="style.css">
     <link rel="manifest" href="manifest.json">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin: 20px;
+            max-width: 500px;
+            margin: auto;
+        }
+
+        button, select, input {
+            width: 90%;
+            padding: 10px;
+            margin: 10px;
+            font-size: 16px;
+        }
+
+        h1 {
+            font-size: 22px;
+            color: #008000;
+        }
+    </style>
 </head>
 <body>
     <h1>FlexRentCalc</h1>
@@ -14,17 +35,19 @@
     <button onclick="toggleManualEntry()">Inserimento Manuale</button>
     <button onclick="calculateRent()">Calcola Noleggio</button>
 
+    <h2>Seleziona la durata</h2>
+    <select id="durata">
+        <option value="12">12 mesi</option>
+        <option value="18">18 mesi</option>
+        <option value="24">24 mesi</option>
+        <option value="36">36 mesi</option>
+        <option value="48">48 mesi</option>
+        <option value="60">60 mesi</option>
+    </select>
+    
     <div id="manualEntry" style="display: none;">
         <h2>Inserisci Coefficienti</h2>
         <input type="number" id="importo" placeholder="Importo">
-        <select id="durata">
-            <option value="12">12 mesi</option>
-            <option value="18">18 mesi</option>
-            <option value="24">24 mesi</option>
-            <option value="36">36 mesi</option>
-            <option value="48">48 mesi</option>
-            <option value="60">60 mesi</option>
-        </select>
         <input type="number" id="coefficiente" placeholder="Coefficiente">
         <button onclick="addCoefficient()">Aggiungi</button>
     </div>
