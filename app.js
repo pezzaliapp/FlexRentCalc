@@ -1,9 +1,8 @@
-// app.js - Versione aggiornata con gestione corretta delle spese di contratto
+// app.js - Versione aggiornata con calcolo costo giornaliero e orario
 let coefficients = {};
 let expenses = {};
 
 document.addEventListener("DOMContentLoaded", function() {
-  // Aggiunge gli event listener agli input file
   document.getElementById("fileCoefficients").addEventListener("change", function() {
     importCSV(this, "coefficients");
   });
@@ -53,7 +52,6 @@ function importCSV(input, type) {
   });
 }
 
-// Funzione per caricare i coefficienti
 function loadCoefficients(data) {
   coefficients = {};
   for (let i = 0; i < data.length; i++) {
@@ -72,14 +70,12 @@ function loadCoefficients(data) {
   }
 }
 
-// Funzione per caricare le spese di contratto
 function loadExpenses(data) {
   expenses = {};
   for (let i = 0; i < data.length; i++) {
     let row = data[i];
     if (row.length < 2) continue;
     
-    // Estraiamo il limite inferiore dell'intervallo
     let rangeText = row[0].split("-")[0].trim(); 
     rangeText = rangeText.replace(".", "").replace(",", ".");
     let lowerBound = parseFloat(rangeText);
@@ -89,7 +85,6 @@ function loadExpenses(data) {
     expenses[lowerBound] = parseFloat(row[1].replace(',', '.')) || 0;
   }
 
-  // Ordiniamo le soglie delle spese per essere sicuri che siano in ordine crescente
   let sortedKeys = Object.keys(expenses).map(Number).sort((a, b) => a - b);
   let sortedExpenses = {};
   sortedKeys.forEach(key => {
@@ -100,10 +95,6 @@ function loadExpenses(data) {
   console.log("Spese ordinate:", expenses);
 }
 
-/**
- * Cerca il coefficiente per l'importo inserito.
- * Seleziona l'ultima soglia disponibile che è minore o uguale all'importo.
- */
 function getCoefficientForAmount(amount, duration) {
   const keys = Object.keys(coefficients).map(Number).sort((a, b) => a - b);
   if (keys.length === 0) return null;
@@ -118,9 +109,6 @@ function getCoefficientForAmount(amount, duration) {
   return coefficients[selectedKey]?.[duration] || null;
 }
 
-/**
- * Calcola il noleggio utilizzando i coefficienti e le spese di contratto.
- */
 function calculateRent() {
   let importo = parseFloat(document.getElementById("importo").value);
   let durata = parseInt(document.getElementById("durata").value);
@@ -138,7 +126,6 @@ function calculateRent() {
 
   let rataMensile = importo * coeff;
 
-  // Trova la spesa di contratto corretta basata sulle soglie caricate
   let speseContratto = 0;
   if (Object.keys(expenses).length > 0) {
     let expenseKeys = Object.keys(expenses).map(Number).sort((a, b) => a - b);
@@ -153,8 +140,15 @@ function calculateRent() {
     speseContratto = expenses[selectedExpenseKey] || 0;
   }
 
+  // Calcolo costo giornaliero e orario
+  let costoGiornaliero = rataMensile / 22; // Supponiamo 22 giorni lavorativi al mese
+  let costoOrario = costoGiornaliero / 8; // Supponiamo 8 ore lavorative al giorno
+
   console.log("Importo:", importo, "Spese selezionate:", speseContratto);
+  console.log("Rata Mensile:", rataMensile, "Costo Giornaliero:", costoGiornaliero, "Costo Orario:", costoOrario);
 
   document.getElementById("rataMensile").textContent = rataMensile.toFixed(2) + " €";
   document.getElementById("speseContratto").textContent = speseContratto.toFixed(2) + " €";
+  document.getElementById("costoGiornaliero").textContent = costoGiornaliero.toFixed(2) + " €";
+  document.getElementById("costoOrario").textContent = costoOrario.toFixed(2) + " €";
 }
