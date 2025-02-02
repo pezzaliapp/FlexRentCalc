@@ -1,4 +1,4 @@
-// app.js - Aggiornato per leggere i nuovi CSV
+// app.js - Aggiornato per leggere CSV invece di Excel
 let coefficients = {};
 let expenses = {};
 
@@ -9,6 +9,10 @@ function importCSV(fileInputId, type) {
         return;
     }
     const file = fileInput.files[0];
+    if (!file.name.endsWith(".csv")) {
+        alert("Formato file non valido. Carica un file CSV.");
+        return;
+    }
     const reader = new FileReader();
     reader.onload = function (event) {
         try {
@@ -17,15 +21,16 @@ function importCSV(fileInputId, type) {
                 coefficients = {};
                 for (let i = 1; i < csvData.length; i++) {
                     let row = csvData[i];
-                    let importo = parseFloat(row[0]);
+                    if (row.length < 7) continue;
+                    let importo = parseFloat(row[0].replace(',', '.'));
                     if (isNaN(importo)) continue;
                     coefficients[importo] = {
-                        12: parseFloat(row[1]) || 0,
-                        18: parseFloat(row[2]) || 0,
-                        24: parseFloat(row[3]) || 0,
-                        36: parseFloat(row[4]) || 0,
-                        48: parseFloat(row[5]) || 0,
-                        60: parseFloat(row[6]) || 0
+                        12: parseFloat(row[1].replace(',', '.')) || 0,
+                        18: parseFloat(row[2].replace(',', '.')) || 0,
+                        24: parseFloat(row[3].replace(',', '.')) || 0,
+                        36: parseFloat(row[4].replace(',', '.')) || 0,
+                        48: parseFloat(row[5].replace(',', '.')) || 0,
+                        60: parseFloat(row[6].replace(',', '.')) || 0
                     };
                 }
                 alert("Coefficienti caricati correttamente!");
@@ -33,8 +38,9 @@ function importCSV(fileInputId, type) {
                 expenses = {};
                 for (let i = 1; i < csvData.length; i++) {
                     let row = csvData[i];
-                    let importoBeni = parseFloat(row[0]);
-                    let spesaContratto = parseFloat(row[1]);
+                    if (row.length < 2) continue;
+                    let importoBeni = parseFloat(row[0].replace(',', '.'));
+                    let spesaContratto = parseFloat(row[1].replace(',', '.'));
                     if (!isNaN(importoBeni) && !isNaN(spesaContratto)) {
                         expenses[importoBeni] = spesaContratto;
                     }
@@ -66,9 +72,8 @@ function calculateRent() {
     let coeff = coefficients[importo][durata];
     let rataMensile = importo * coeff;
 
-    let speseContratto = Object.entries(expenses).reduce((acc, [key, value]) => {
-        return importo >= parseFloat(key) ? value : acc;
-    }, 0);
+    let speseContratto = Object.entries(expenses).find(([range, value]) =>
+        importo >= parseFloat(range))?.[1] || 0;
     
     document.getElementById("rataMensile").textContent = rataMensile.toFixed(2) + " €";
     document.getElementById("speseContratto").textContent = speseContratto.toFixed(2) + " €";
