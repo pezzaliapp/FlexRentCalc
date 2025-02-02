@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FlexRentCalc</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="manifest" href="manifest.json">
+</head>
+<body>
+    <h1>FlexRentCalc</h1>
+    <input type="file" id="fileUpload" accept=".xlsx">
+    <button onclick="importCoefficients()">Carica Coefficienti</button>
+    <button onclick="toggleManualEntry()">Inserimento Manuale</button>
+    <button onclick="calculateRent()">Calcola Noleggio</button>
+
+    <div id="manualEntry" style="display: none;">
+        <h2>Inserisci Coefficienti</h2>
+        <input type="number" id="importo" placeholder="Importo">
+        <input type="number" id="durata" placeholder="Durata in mesi">
+        <input type="number" id="coefficiente" placeholder="Coefficiente">
+        <button onclick="addCoefficient()">Aggiungi</button>
+    </div>
+
+    <h2>Risultati</h2>
+    <p>Rata Mensile: <span id="rataMensile">-</span></p>
+    <p>Spese Contratto: <span id="speseContratto">-</span></p>
+    <p>Costo Giornaliero: <span id="costoGiornaliero">-</span></p>
+    <p>Costo Orario: <span id="costoOrario">-</span></p>
+
+    <script src="app.js"></script>
+    <script>
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('./service-worker.js')
+                .then(() => console.log('Service Worker registrato!'))
+                .catch(err => console.error('Errore Service Worker:', err));
+        }
+    </script>
+</body>
+</html>
