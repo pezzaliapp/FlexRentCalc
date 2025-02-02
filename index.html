@@ -33,7 +33,6 @@
     <input type="file" id="fileUpload" accept=".xlsx">
     <button onclick="importCoefficients()">Carica Coefficienti</button>
     <button onclick="toggleManualEntry()">Inserimento Manuale</button>
-    <button onclick="calculateRent()">Calcola Noleggio</button>
 
     <h2>Seleziona la durata</h2>
     <select id="durata">
@@ -44,10 +43,15 @@
         <option value="48">48 mesi</option>
         <option value="60">60 mesi</option>
     </select>
-    
+
+    <h2>Inserisci Importo</h2>
+    <input type="number" id="importo" placeholder="Inserisci importo">
+
+    <button onclick="calculateRent()">Calcola Noleggio</button>
+
     <div id="manualEntry" style="display: none;">
         <h2>Inserisci Coefficienti</h2>
-        <input type="number" id="importo" placeholder="Importo">
+        <input type="number" id="importoManual" placeholder="Importo">
         <input type="number" id="coefficiente" placeholder="Coefficiente">
         <button onclick="addCoefficient()">Aggiungi</button>
     </div>
