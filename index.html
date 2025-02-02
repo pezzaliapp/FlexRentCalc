@@ -48,7 +48,7 @@
   <button onclick="triggerFile('fileExpenses')">Carica Spese</button>
 
   <h2>Inserisci Importo</h2>
-  <!-- Input tipo text per gestire formattazioni (es. "4.500,00 €") -->
+  <!-- Utilizziamo un input di tipo text per gestire anche formattazioni (es. "4.500,00 €") -->
   <input type="text" id="importo" placeholder="Inserisci importo (es. 4.500,00 €)">
 
   <h2>Seleziona la Durata</h2>
@@ -80,7 +80,7 @@
       document.getElementById(id).click();
     }
     
-    // Se presente, cancella le cache (ad es. del service worker)
+    // Se presente, cancella eventuali cache (utile per il service worker)
     if ('caches' in window) {
       caches.keys().then(cacheNames => {
         cacheNames.forEach(cacheName => {
