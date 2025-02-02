@@ -1,8 +1,11 @@
-// app.js - Corretto per leggere solo CSV
+// app.js - Versione aggiornata per leggere file CSV con gestione avanzata
 let coefficients = {};
 let expenses = {};
 
 document.addEventListener("DOMContentLoaded", function() {
+    // Assicurati che gli input abbiano questi ID anche nel file HTML:
+    // <input type="file" id="fileCoefficients" />
+    // <input type="file" id="fileExpenses" />
     document.getElementById("fileCoefficients").addEventListener("change", function() {
         importCSV(this, "coefficients");
     });
@@ -24,12 +27,20 @@ function importCSV(input, type) {
     const reader = new FileReader();
     reader.onload = function (event) {
         try {
-            const csvData = event.target.result.split("\n").map(row => row.split(";"));
+            // Rimuove eventuale BOM e uniforma i ritorni a capo
+            let csvText = event.target.result.replace(/^\uFEFF/, '').replace(/\r/g, '');
+            console.log("CSV caricato:", csvText);
+            
+            // Divide il file in righe e usa sia ',' che ';' come delimitatori
+            const csvData = csvText.split("\n").map(row => row.split(/[,;]+/));
+            console.log("Dati CSV elaborati:", csvData);
+            
+            // Gestione dei coefficienti (si assume che la prima riga sia l'intestazione)
             if (type === "coefficients") {
                 coefficients = {};
                 for (let i = 1; i < csvData.length; i++) {
                     let row = csvData[i];
-                    if (row.length < 7) continue;
+                    if (row.length < 7) continue; // Salta righe incomplete
                     let importo = parseFloat(row[0].replace(',', '.'));
                     if (isNaN(importo)) continue;
                     coefficients[importo] = {
@@ -42,7 +53,9 @@ function importCSV(input, type) {
                     };
                 }
                 alert("Coefficienti caricati correttamente!");
-            } else if (type === "expenses") {
+            } 
+            // Gestione delle spese di contratto (si assume che la prima riga sia l'intestazione)
+            else if (type === "expenses") {
                 expenses = {};
                 for (let i = 1; i < csvData.length; i++) {
                     let row = csvData[i];
@@ -80,6 +93,7 @@ function calculateRent() {
     let coeff = coefficients[importo][durata];
     let rataMensile = importo * coeff;
 
+    // Cerca il range più appropriato per le spese di contratto
     let speseContratto = Object.entries(expenses).find(([range, value]) =>
         importo >= parseFloat(range))?.[1] || 0;
     
