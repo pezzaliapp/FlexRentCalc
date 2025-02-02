@@ -1,4 +1,4 @@
-// app.js - Aggiornato per leggere CSV invece di Excel
+// app.js - Aggiornato per leggere i nuovi CSV
 let coefficients = {};
 let expenses = {};
 
@@ -66,8 +66,9 @@ function calculateRent() {
     let coeff = coefficients[importo][durata];
     let rataMensile = importo * coeff;
 
-    let speseContratto = Object.entries(expenses).find(([range, value]) =>
-        importo >= parseFloat(range))?.[1] || 0;
+    let speseContratto = Object.entries(expenses).reduce((acc, [key, value]) => {
+        return importo >= parseFloat(key) ? value : acc;
+    }, 0);
     
     document.getElementById("rataMensile").textContent = rataMensile.toFixed(2) + " €";
     document.getElementById("speseContratto").textContent = speseContratto.toFixed(2) + " €";
