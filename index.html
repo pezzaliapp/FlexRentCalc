@@ -39,16 +39,16 @@
   <h1>FlexRentCalc</h1>
 
   <h3>Carica i file CSV</h3>
-  <!-- File per i coefficienti -->
+  <!-- Input per i coefficienti -->
   <input type="file" id="fileCoefficients" accept=".csv" class="hidden">
   <button onclick="triggerFile('fileCoefficients')">Carica Coefficienti</button>
   
-  <!-- File per le spese -->
+  <!-- Input per le spese -->
   <input type="file" id="fileExpenses" accept=".csv" class="hidden">
   <button onclick="triggerFile('fileExpenses')">Carica Spese</button>
 
   <h2>Inserisci Importo</h2>
-  <!-- L'input è di tipo text per poter gestire anche formattazioni (es. "4.500,00 €") -->
+  <!-- Input tipo text per gestire formattazioni (es. "4.500,00 €") -->
   <input type="text" id="importo" placeholder="Inserisci importo (es. 4.500,00 €)">
 
   <h2>Seleziona la Durata</h2>
@@ -75,12 +75,12 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
   <script src="app.js"></script>
   <script>
-    // Simula il click sugli input file nascosti
+    // Funzione per simulare il click sugli input file nascosti
     function triggerFile(id) {
       document.getElementById(id).click();
     }
     
-    // Cancellazione della cache (se usata, ad esempio per il service worker)
+    // Se presente, cancella le cache (ad es. del service worker)
     if ('caches' in window) {
       caches.keys().then(cacheNames => {
         cacheNames.forEach(cacheName => {
