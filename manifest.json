@@ -1,7 +1,7 @@
 {
     "name": "FlexRentCalc",
     "short_name": "FRC",
-    "start_url": "./index.html",
+    "start_url": "/FlexRentCalc/",
     "display": "standalone",
     "background_color": "#ffffff",
     "theme_color": "#008000",
@@ -17,8 +17,8 @@
             "type": "image/png"
         }
     ],
-    "scope": "./",
-    "id": "./",
+    "scope": "/FlexRentCalc/",
+    "id": "/FlexRentCalc/",
     "description": "PWA per il calcolo del noleggio operativo.",
     "orientation": "portrait",
     "display_override": ["window-controls-overlay"]
