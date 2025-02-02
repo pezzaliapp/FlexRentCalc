@@ -1,6 +1,4 @@
-// app.js - Versione aggiornata con correzione dei coefficienti e spese di contratto,
-// e con rilevazione automatica dell'intestazione nei file CSV
-
+// app.js - Versione aggiornata con correzione dei coefficienti e spese di contratto
 let coefficients = {};
 let expenses = {};
 
@@ -26,7 +24,7 @@ function importCSV(input, type) {
   }
 
   Papa.parse(file, {
-    header: false,      // Non usiamo l'opzione header; gestiamo manualmente eventuali intestazioni
+    header: false,      // Gestiamo manualmente eventuali intestazioni
     skipEmptyLines: true,
     complete: function(results) {
       console.log("Dati CSV elaborati:", results.data);
@@ -60,7 +58,6 @@ function importCSV(input, type) {
   Se la prima riga contiene un valore non numerico nel primo campo, viene considerata un'intestazione.
 */
 
-// Carica i coefficienti (sostituendo eventuali dati già presenti)
 function loadCoefficients(data) {
   coefficients = {}; // azzera i dati esistenti
   let startIndex = 0;
@@ -84,7 +81,6 @@ function loadCoefficients(data) {
   }
 }
 
-// Carica le spese di contratto (sostituendo eventuali dati già presenti)
 function loadExpenses(data) {
   expenses = {};
   let startIndex = 0;
@@ -102,8 +98,7 @@ function loadExpenses(data) {
 
 /**
  * Cerca il coefficiente per l'importo inserito.
- * La logica: si ordinano le soglie dei coefficienti in ordine crescente e si seleziona l'ultima soglia
- * per cui l'importo è maggiore o uguale (se l'importo supera tutte le soglie, si usa quella più alta).
+ * Ordina le soglie in ordine crescente e seleziona l'ultima soglia per cui l'importo è maggiore o uguale.
  */
 function getCoefficientForAmount(amount, duration) {
   const keys = Object.keys(coefficients).map(Number).sort((a, b) => a - b);
@@ -125,12 +120,14 @@ function getCoefficientForAmount(amount, duration) {
 /**
  * Calcola il noleggio utilizzando i coefficienti e le spese di contratto caricati.
  * Le spese seguono la logica:
- *   - Se l'importo è ≤ 5000 → 75 €
- *   - Se è compreso tra 5001 e 10000 → 100 €
- *   - Se è compreso tra 10001 e 25000 → 150 €
- *   - Se è compreso tra 25001 e 50000 → 225 €
- *   - Se è compreso tra 50001 e 100000 → 300 €
- *   - Se è > 100000 → 300 €
+ *   - Se importo ≤ 5000 → 75 €
+ *   - Se 5001 ≤ importo ≤ 10000 → 100 €
+ *   - Se 10001 ≤ importo ≤ 25000 → 150 €
+ *   - Se 25001 ≤ importo ≤ 50000 → 225 €
+ *   - Se 50001 ≤ importo ≤ 100000 → 300 €
+ *   - Se importo > 100000 → 300 €
+ * 
+ * La funzione utilizza i dati CSV per le spese, assumendo che i valori nel CSV rappresentino il limite inferiore del range.
  */
 function calculateRent() {
   let importo = parseFloat(document.getElementById("importo").value);
@@ -149,33 +146,23 @@ function calculateRent() {
 
   let rataMensile = importo * coeff;
 
-  // Calcolo delle spese di contratto secondo la logica del CSV:
-  // Vogliamo utilizzare i range indicati nel CSV:
-  //   - Se importo ≤ 5000, spesa = 75
-  //   - Se 5001 ≤ importo ≤ 10000, spesa = 100
-  //   - Se 10001 ≤ importo ≤ 25000, spesa = 150
-  //   - Se 25001 ≤ importo ≤ 50000, spesa = 225
-  //   - Se 50001 ≤ importo ≤ 100000, spesa = 300
-  //   - Se importo > 100000, spesa = 300
+  // Calcolo delle spese di contratto utilizzando la logica a limiti inferiori:
+  // Si ordina l'array delle chiavi dei range (limiti inferiori) in ordine crescente.
+  // Si seleziona l'ultima chiave per cui l'importo è maggiore o uguale a quel limite.
   let speseContratto = 0;
   if (Object.keys(expenses).length > 0) {
-    // Ordina le chiavi dei range delle spese in ordine crescente
     let expenseKeys = Object.keys(expenses).map(Number).sort((a, b) => a - b);
-    let selectedExpenseKey = null;
-    // Scorri le chiavi: cerca il primo range per cui l'importo è minore o uguale al limite
+    let selectedExpenseKey = expenseKeys[0];
     for (let k of expenseKeys) {
-      if (importo <= k) {
+      if (importo >= k) {
         selectedExpenseKey = k;
+      } else {
         break;
       }
     }
-    // Se l'importo supera tutti i range, usa il più alto disponibile
-    if (selectedExpenseKey === null) {
-      selectedExpenseKey = expenseKeys[expenseKeys.length - 1];
-    }
     speseContratto = expenses[selectedExpenseKey];
   } else {
-    speseContratto = 0; // Valore di default se non sono caricati dati CSV per le spese
+    speseContratto = 0;
   }
 
   document.getElementById("rataMensile").textContent = rataMensile.toFixed(2) + " €";
