@@ -1,4 +1,5 @@
-// app.js - Versione aggiornata con correzione dei coefficienti e spese di contratto
+// app.js - Versione aggiornata con log di debug e gestione dei range delle spese
+
 let coefficients = {};
 let expenses = {};
 
@@ -54,8 +55,8 @@ function importCSV(input, type) {
 }
 
 /* 
-  Funzioni per caricare i CSV con rilevazione automatica dell'intestazione.
-  Se la prima riga contiene un valore non numerico nel primo campo, viene considerata un'intestazione.
+  Le seguenti funzioni caricano i CSV verificando se la prima riga è un'intestazione.
+  Se il primo campo della prima riga non è numerico, la riga viene saltata.
 */
 
 function loadCoefficients(data) {
@@ -66,10 +67,10 @@ function loadCoefficients(data) {
   }
   for (let i = startIndex; i < data.length; i++) {
     let row = data[i];
-    if (row.length < 7) continue; // Salta righe incomplete
+    console.log("Coefficienti - Riga " + i + ": ", row);
+    if (row.length < 7) continue; // salta righe incomplete
     let key = parseFloat(String(row[0]).trim().replace(',', '.'));
     if (isNaN(key)) continue;
-    // I coefficienti sono espressi in percentuale; li convertiamo in decimale dividendo per 100
     coefficients[key] = {
       12: (parseFloat(String(row[1]).trim().replace(',', '.')) || 0) / 100,
       18: (parseFloat(String(row[2]).trim().replace(',', '.')) || 0) / 100,
@@ -89,6 +90,7 @@ function loadExpenses(data) {
   }
   for (let i = startIndex; i < data.length; i++) {
     let row = data[i];
+    console.log("Spese - Riga " + i + ": ", row);
     if (row.length < 2) continue;
     let key = parseFloat(String(row[0]).trim().replace(',', '.'));
     if (isNaN(key)) continue;
@@ -98,15 +100,15 @@ function loadExpenses(data) {
 
 /**
  * Cerca il coefficiente per l'importo inserito.
- * Ordina le soglie in ordine crescente e seleziona l'ultima soglia per cui l'importo è maggiore o uguale.
+ * Ordina le soglie dei coefficienti in ordine crescente e seleziona l'ultima soglia per cui l'importo è maggiore o uguale.
  */
 function getCoefficientForAmount(amount, duration) {
   const keys = Object.keys(coefficients).map(Number).sort((a, b) => a - b);
   if (keys.length === 0) return null;
   let selectedKey = keys[0];
-  for (let i = 0; i < keys.length; i++) {
-    if (amount >= keys[i]) {
-      selectedKey = keys[i];
+  for (let k of keys) {
+    if (amount >= k) {
+      selectedKey = k;
     } else {
       break;
     }
@@ -119,15 +121,14 @@ function getCoefficientForAmount(amount, duration) {
 
 /**
  * Calcola il noleggio utilizzando i coefficienti e le spese di contratto caricati.
- * Le spese seguono la logica:
- *   - Se importo ≤ 5000 → 75 €
- *   - Se 5001 ≤ importo ≤ 10000 → 100 €
- *   - Se 10001 ≤ importo ≤ 25000 → 150 €
- *   - Se 25001 ≤ importo ≤ 50000 → 225 €
- *   - Se 50001 ≤ importo ≤ 100000 → 300 €
- *   - Se importo > 100000 → 300 €
+ * La logica per le spese è la seguente (in base ai limiti inferiori):
+ *   - Se l'importo è ≥ 0 ma inferiore a 5001 → spesa = 75 €
+ *   - Se l'importo è ≥ 5001 ma inferiore a 10001 → spesa = 100 €
+ *   - Se l'importo è ≥ 10001 ma inferiore a 25001 → spesa = 150 €
+ *   - Se l'importo è ≥ 25001 ma inferiore a 50001 → spesa = 225 €
+ *   - Se l'importo è ≥ 50001 → spesa = 300 €
  * 
- * La funzione utilizza i dati CSV per le spese, assumendo che i valori nel CSV rappresentino il limite inferiore del range.
+ * La funzione assume che il CSV delle spese sia strutturato con i limiti inferiori.
  */
 function calculateRent() {
   let importo = parseFloat(document.getElementById("importo").value);
@@ -146,14 +147,15 @@ function calculateRent() {
 
   let rataMensile = importo * coeff;
 
-  // Calcolo delle spese di contratto utilizzando la logica a limiti inferiori:
-  // Si ordina l'array delle chiavi dei range (limiti inferiori) in ordine crescente.
-  // Si seleziona l'ultima chiave per cui l'importo è maggiore o uguale a quel limite.
+  // Calcolo delle spese di contratto usando i limiti inferiori dal CSV
   let speseContratto = 0;
   if (Object.keys(expenses).length > 0) {
+    // Ordina le chiavi dei range in ordine crescente
     let expenseKeys = Object.keys(expenses).map(Number).sort((a, b) => a - b);
-    let selectedExpenseKey = expenseKeys[0];
+    console.log("Chiavi spese:", expenseKeys);
+    let selectedExpenseKey = expenseKeys[0]; // se l'importo è inferiore a tutte le soglie, usa la minima
     for (let k of expenseKeys) {
+      // Cerchiamo il massimo limite inferiore che non superi l'importo
       if (importo >= k) {
         selectedExpenseKey = k;
       } else {
@@ -161,6 +163,7 @@ function calculateRent() {
       }
     }
     speseContratto = expenses[selectedExpenseKey];
+    console.log("Importo:", importo, "selezionato range spese:", selectedExpenseKey, "→ spesa:", speseContratto);
   } else {
     speseContratto = 0;
   }
