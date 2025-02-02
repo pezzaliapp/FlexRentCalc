@@ -4,7 +4,7 @@
 let coefficients = {};
 let expenses = {};
 
-// Al caricamento della pagina, impostiamo gli event listener e ripristiniamo i dati dal localStorage se presenti
+// Al caricamento della pagina, impostiamo gli event listener e ripristiniamo i dati dal localStorage (se presenti)
 document.addEventListener("DOMContentLoaded", function() {
   // Event listener per il caricamento dei file CSV
   document.getElementById("fileCoefficients").addEventListener("change", function() {
@@ -51,7 +51,7 @@ function importCSV(input, type) {
   }
 
   Papa.parse(file, {
-    header: false,      // I CSV hanno una riga di intestazione
+    header: false,      // Il CSV può avere o meno un'intestazione
     skipEmptyLines: true,
     complete: function(results) {
       console.log("Dati CSV elaborati:", results.data);
@@ -97,13 +97,13 @@ function importCSV(input, type) {
 // Funzione per caricare (sostituire) i coefficienti
 function loadCoefficients(csvData) {
   coefficients = {}; // azzera i dati esistenti
-  // Si parte dalla seconda riga (presupponendo che la prima sia l'intestazione)
-  for (let i = 1; i < csvData.length; i++) {
+  // Scorriamo tutte le righe; se il primo campo non è un numero, la consideriamo come header e la saltiamo
+  for (let i = 0; i < csvData.length; i++) {
     let row = csvData[i];
-    if (row.length < 7) continue;
+    if (row.length < 7) continue; // Salta righe incomplete
     let imp = parseFloat(row[0].replace(',', '.'));
-    if (isNaN(imp)) continue;
-    // I coefficienti sono espressi in percentuale, li convertiamo in decimale dividendo per 100
+    if (isNaN(imp)) continue; // Probabilmente è l'intestazione
+    // I coefficienti sono espressi in percentuale; li convertiamo in decimale dividendo per 100
     coefficients[imp] = {
       12: (parseFloat(row[1].replace(',', '.')) || 0) / 100,
       18: (parseFloat(row[2].replace(',', '.')) || 0) / 100,
@@ -119,12 +119,11 @@ function loadCoefficients(csvData) {
 
 // Funzione per unire (merge) i coefficienti con quelli già esistenti
 function mergeCoefficients(csvData) {
-  for (let i = 1; i < csvData.length; i++) {
+  for (let i = 0; i < csvData.length; i++) {
     let row = csvData[i];
     if (row.length < 7) continue;
     let imp = parseFloat(row[0].replace(',', '.'));
     if (isNaN(imp)) continue;
-    // Se la chiave esiste, la sostituisce; altrimenti, la aggiunge
     coefficients[imp] = {
       12: (parseFloat(row[1].replace(',', '.')) || 0) / 100,
       18: (parseFloat(row[2].replace(',', '.')) || 0) / 100,
@@ -141,14 +140,13 @@ function mergeCoefficients(csvData) {
 // Funzione per caricare (sostituire) le spese
 function loadExpenses(csvData) {
   expenses = {};
-  for (let i = 1; i < csvData.length; i++) {
+  for (let i = 0; i < csvData.length; i++) {
     let row = csvData[i];
     if (row.length < 2) continue;
     let impBeni = parseFloat(row[0].replace(',', '.'));
+    if (isNaN(impBeni)) continue;
     let spesa = parseFloat(row[1].replace(',', '.'));
-    if (!isNaN(impBeni) && !isNaN(spesa)) {
-      expenses[impBeni] = spesa;
-    }
+    expenses[impBeni] = spesa;
   }
   alert("Spese di contratto caricate correttamente!");
   console.log("Spese:", expenses);
@@ -156,14 +154,13 @@ function loadExpenses(csvData) {
 
 // Funzione per unire (merge) le spese con quelle già esistenti
 function mergeExpenses(csvData) {
-  for (let i = 1; i < csvData.length; i++) {
+  for (let i = 0; i < csvData.length; i++) {
     let row = csvData[i];
     if (row.length < 2) continue;
     let impBeni = parseFloat(row[0].replace(',', '.'));
+    if (isNaN(impBeni)) continue;
     let spesa = parseFloat(row[1].replace(',', '.'));
-    if (!isNaN(impBeni) && !isNaN(spesa)) {
-      expenses[impBeni] = spesa;
-    }
+    expenses[impBeni] = spesa;
   }
   alert("Spese di contratto aggiornate (merge) correttamente!");
   console.log("Spese dopo merge:", expenses);
@@ -187,8 +184,8 @@ function formatNumber(value) {
 }
 
 /**
- * Calcola il noleggio utilizzando i coefficienti ed le spese caricate
- * Se i dati CSV non sono ancora stati caricati, viene visualizzato un alert
+ * Calcola il noleggio utilizzando i coefficienti ed le spese caricate.
+ * Se i dati CSV non sono stati caricati, viene visualizzato un alert.
  */
 function calculateRent() {
   let importo = parseEuropeanFloat(document.getElementById("importo").value);
@@ -199,18 +196,19 @@ function calculateRent() {
     return;
   }
 
-  // Controlla che i coefficienti siano disponibili
+  // Verifica che i coefficienti siano disponibili
   if (Object.keys(coefficients).length === 0) {
     alert("Dati dei coefficienti mancanti. Carica il file CSV dei coefficienti.");
     return;
   }
 
+  // Calcolo delle spese di contratto:
   // Se l'importo è inferiore a 5001, le spese fisse sono 75€
   let speseContratto = 0;
   if (importo < 5001) {
     speseContratto = 75;
   } else {
-    // Se invece esistono dati nelle spese (caricati da CSV), usiamo il range più adatto
+    // Se sono stati caricati dati per le spese, usa il range più adatto
     if (Object.keys(expenses).length > 0) {
       speseContratto = Object.entries(expenses)
         .filter(([range, value]) => importo >= parseFloat(range))
@@ -238,7 +236,7 @@ function calculateRent() {
   let costoGiornaliero = rataMensile / 22;
   let costoOrario = costoGiornaliero / 8;
 
-  // Aggiornamento dei risultati nel DOM
+  // Aggiorna i risultati nel DOM
   document.getElementById("rataMensile").textContent = formatNumber(rataMensile) + " €";
   document.getElementById("speseContratto").textContent = formatNumber(speseContratto) + " €";
   document.getElementById("costoGiornaliero").textContent = formatNumber(costoGiornaliero) + " €";
