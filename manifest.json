@@ -4,7 +4,7 @@
     "start_url": "./index.html",
     "display": "standalone",
     "background_color": "#ffffff",
-    "theme_color": "#000000",
+    "theme_color": "#008000",
     "icons": [
         {
             "src": "./icon-192.png",
@@ -16,5 +16,10 @@
             "sizes": "512x512",
             "type": "image/png"
         }
-    ]
+    ],
+    "scope": "./",
+    "id": "./",
+    "description": "PWA per il calcolo del noleggio operativo.",
+    "orientation": "portrait",
+    "display_override": ["window-controls-overlay"]
 }
