@@ -51,7 +51,8 @@ function importCSV(input, type) {
   }
 
   Papa.parse(file, {
-    header: false,      // Il CSV può avere o meno un'intestazione
+    delimiter: ";",       // Forza l'uso del punto e virgola come separatore
+    header: false,        // Il CSV può avere o meno un'intestazione
     skipEmptyLines: true,
     complete: function(results) {
       console.log("Dati CSV elaborati:", results.data);
