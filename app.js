@@ -51,16 +51,17 @@ function importCSV(input, type) {
 
   Papa.parse(file, {
     delimiter: ";",       // Forza l'uso del punto e virgola come separatore
-    dynamicTyping: true,  // Converte automaticamente i numeri
     skipEmptyLines: true,
     header: false,
+    // dynamicTyping: true non lo usiamo qui perché vogliamo controllare manualmente la conversione
     complete: function(results) {
       console.log("Dati CSV elaborati:", results.data);
       const data = results.data;
       try {
         if (type === "coefficients") {
+          // Se già esistono coefficienti, chiedi se sostituirli oppure unirli
           if (Object.keys(coefficients).length > 0) {
-            if (confirm("I coefficienti CSV sono già stati caricati. Vuoi sostituirli? (Premi OK per sostituire, Annulla per unire)")) {
+            if (confirm("I coefficienti CSV sono già stati caricati. Vuoi sostituirli? (OK = sostituisci, Annulla = unisci)")) {
               loadCoefficients(data);
             } else {
               mergeCoefficients(data);
@@ -71,7 +72,7 @@ function importCSV(input, type) {
           localStorage.setItem("coefficients", JSON.stringify(coefficients));
         } else if (type === "expenses") {
           if (Object.keys(expenses).length > 0) {
-            if (confirm("Le spese CSV sono già state caricate. Vuoi sostituirle? (Premi OK per sostituire, Annulla per unire)")) {
+            if (confirm("Le spese CSV sono già state caricate. Vuoi sostituirle? (OK = sostituisci, Annulla = unisci)")) {
               loadExpenses(data);
             } else {
               mergeExpenses(data);
@@ -93,75 +94,81 @@ function importCSV(input, type) {
   });
 }
 
-// Carica (sostituendo) i coefficienti dal CSV
+// FUNZIONI DI CARICAMENTO DEI CSV
+// I dati vengono processati riga per riga: se la riga non contiene almeno il numero di colonne atteso, viene saltata.
+// Vengono usati .trim() e parseFloat(...replace(',', '.')) per convertire correttamente i numeri.
+
 function loadCoefficients(data) {
   coefficients = {}; // azzera i dati esistenti
   for (let i = 0; i < data.length; i++) {
     let row = data[i];
-    if (row.length < 7) continue; // Salta righe incomplete
-    let key = Number(String(row[0]).trim());
-    if (isNaN(key)) continue; // Salta la riga di intestazione (o righe non valide)
+    console.log("Coefficienti - Riga " + i + ": ", row);
+    if (row.length < 7) continue; // salta righe incomplete
+    // Prova a convertire il primo campo in numero (soglia)
+    let key = parseFloat(String(row[0]).trim().replace(',', '.'));
+    if (isNaN(key)) continue; // ignora eventuali righe di intestazione
     coefficients[key] = {
-      12: (Number(row[1]) || 0) / 100,
-      18: (Number(row[2]) || 0) / 100,
-      24: (Number(row[3]) || 0) / 100,
-      36: (Number(row[4]) || 0) / 100,
-      48: (Number(row[5]) || 0) / 100,
-      60: (Number(row[6]) || 0) / 100
+      12: (parseFloat(String(row[1]).trim().replace(',', '.')) || 0) / 100,
+      18: (parseFloat(String(row[2]).trim().replace(',', '.')) || 0) / 100,
+      24: (parseFloat(String(row[3]).trim().replace(',', '.')) || 0) / 100,
+      36: (parseFloat(String(row[4]).trim().replace(',', '.')) || 0) / 100,
+      48: (parseFloat(String(row[5]).trim().replace(',', '.')) || 0) / 100,
+      60: (parseFloat(String(row[6]).trim().replace(',', '.')) || 0) / 100
     };
   }
   alert("Coefficienti caricati correttamente!");
   console.log("Coefficienti:", coefficients);
 }
 
-// Unisce (merge) i coefficienti dal CSV con quelli già esistenti
 function mergeCoefficients(data) {
   for (let i = 0; i < data.length; i++) {
     let row = data[i];
+    console.log("Merge coefficienti - Riga " + i + ": ", row);
     if (row.length < 7) continue;
-    let key = Number(String(row[0]).trim());
+    let key = parseFloat(String(row[0]).trim().replace(',', '.'));
     if (isNaN(key)) continue;
     coefficients[key] = {
-      12: (Number(row[1]) || 0) / 100,
-      18: (Number(row[2]) || 0) / 100,
-      24: (Number(row[3]) || 0) / 100,
-      36: (Number(row[4]) || 0) / 100,
-      48: (Number(row[5]) || 0) / 100,
-      60: (Number(row[6]) || 0) / 100
+      12: (parseFloat(String(row[1]).trim().replace(',', '.')) || 0) / 100,
+      18: (parseFloat(String(row[2]).trim().replace(',', '.')) || 0) / 100,
+      24: (parseFloat(String(row[3]).trim().replace(',', '.')) || 0) / 100,
+      36: (parseFloat(String(row[4]).trim().replace(',', '.')) || 0) / 100,
+      48: (parseFloat(String(row[5]).trim().replace(',', '.')) || 0) / 100,
+      60: (parseFloat(String(row[6]).trim().replace(',', '.')) || 0) / 100
     };
   }
   alert("Coefficienti aggiornati (merge) correttamente!");
   console.log("Coefficienti dopo merge:", coefficients);
 }
 
-// Carica (sostituendo) le spese dal CSV
 function loadExpenses(data) {
   expenses = {};
   for (let i = 0; i < data.length; i++) {
     let row = data[i];
+    console.log("Spese - Riga " + i + ": ", row);
     if (row.length < 2) continue;
-    let key = Number(String(row[0]).trim());
+    let key = parseFloat(String(row[0]).trim().replace(',', '.'));
     if (isNaN(key)) continue;
-    expenses[key] = Number(row[1]) || 0;
+    expenses[key] = parseFloat(String(row[1]).trim().replace(',', '.')) || 0;
   }
   alert("Spese di contratto caricate correttamente!");
   console.log("Spese:", expenses);
 }
 
-// Unisce (merge) le spese dal CSV con quelle già esistenti
 function mergeExpenses(data) {
   for (let i = 0; i < data.length; i++) {
     let row = data[i];
+    console.log("Merge spese - Riga " + i + ": ", row);
     if (row.length < 2) continue;
-    let key = Number(String(row[0]).trim());
+    let key = parseFloat(String(row[0]).trim().replace(',', '.'));
     if (isNaN(key)) continue;
-    expenses[key] = Number(row[1]) || 0;
+    expenses[key] = parseFloat(String(row[1]).trim().replace(',', '.')) || 0;
   }
   alert("Spese di contratto aggiornate (merge) correttamente!");
   console.log("Spese dopo merge:", expenses);
 }
 
-// Converte una stringa in formato europeo in numero
+// Funzioni di conversione e formattazione
+
 function parseEuropeanFloat(value) {
   if (!value) return 0;
   value = value.replace(/€/g, '')
@@ -171,14 +178,13 @@ function parseEuropeanFloat(value) {
   return parseFloat(value) || 0;
 }
   
-// Formatta un numero in formato europeo
 function formatNumber(value) {
   return value.toLocaleString("it-IT", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 }
 
 /**
- * Calcola il noleggio utilizzando i coefficienti e le spese caricati.
- * Se i dati CSV non sono disponibili, viene mostrato un alert.
+ * Calcola il noleggio utilizzando i coefficienti ed eventuali spese.
+ * Se i dati CSV non sono stati caricati, viene mostrato un alert.
  */
 function calculateRent() {
   let importo = parseEuropeanFloat(document.getElementById("importo").value);
@@ -193,18 +199,17 @@ function calculateRent() {
     return;
   }
   
-  // Selezione del coefficiente:
-  // Ordina le chiavi (importi) in ordine crescente
+  // Seleziona il coefficiente corretto:
+  // Ordina le chiavi (soglie) in ordine crescente
   let keys = Object.keys(coefficients).map(Number).sort((a, b) => a - b);
   let selectedKey = null;
-  // Cerca il primo range per cui l'importo inserito è minore o uguale
   for (let k of keys) {
     if (importo <= k) {
       selectedKey = k;
       break;
     }
   }
-  // Se nessun range è trovato (importo superiore a tutti), usa il più alto disponibile
+  // Se l'importo supera tutte le soglie, usa il valore più alto
   if (selectedKey === null) {
     selectedKey = keys[keys.length - 1];
   }
@@ -224,20 +229,18 @@ function calculateRent() {
     speseContratto = 75;
   } else {
     if (Object.keys(expenses).length > 0) {
-      // Ordina le chiavi delle spese in ordine crescente
       let expenseKeys = Object.keys(expenses).map(Number).sort((a, b) => a - b);
-      let expenseKey = null;
+      let selectedExpenseKey = null;
       for (let ek of expenseKeys) {
         if (importo <= ek) {
-          expenseKey = ek;
+          selectedExpenseKey = ek;
           break;
         }
       }
-      // Se non viene trovato alcun range, usa il più alto disponibile
-      if (expenseKey === null) {
-        expenseKey = expenseKeys[expenseKeys.length - 1];
+      if (selectedExpenseKey === null) {
+        selectedExpenseKey = expenseKeys[expenseKeys.length - 1];
       }
-      speseContratto = expenses[expenseKey];
+      speseContratto = expenses[selectedExpenseKey];
     }
   }
   
