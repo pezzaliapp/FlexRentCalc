@@ -1,0 +1,19 @@
+/* style.css */
+body {
+    font-family: Arial, sans-serif;
+    text-align: center;
+    margin: 20px;
+}
+
+button {
+    margin: 10px;
+    padding: 10px;
+    font-size: 16px;
+    cursor: pointer;
+}
+
+#manualEntry {
+    border: 1px solid #ccc;
+    padding: 10px;
+    margin-top: 20px;
+}
