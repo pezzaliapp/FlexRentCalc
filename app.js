@@ -1,4 +1,4 @@
-// app.js - Corretto calcolo della rata mensile e selezione precisa del coefficiente
+// app.js - Corretto calcolo della rata mensile con precisione a 15 decimali
 let coefficients = {};
 let expenses = {};
 
@@ -52,7 +52,7 @@ function importCSV(input, type) {
   });
 }
 
-// Caricamento dei coefficienti con gestione precisa dei valori
+// Caricamento dei coefficienti con precisione massima
 function loadCoefficients(data) {
   coefficients = {};
   for (let i = 0; i < data.length; i++) {
@@ -69,33 +69,7 @@ function loadCoefficients(data) {
       60: parseFloat(row[6].replace(',', '.')) / 100 || 0
     };
   }
-  console.log("Coefficienti caricati:", coefficients);
-}
-
-// Caricamento delle spese con estrazione dei limiti inferiori
-function loadExpenses(data) {
-  expenses = {};
-  for (let i = 0; i < data.length; i++) {
-    let row = data[i];
-    if (row.length < 2) continue;
-
-    let rangeText = row[0].split("-")[0].trim();
-    rangeText = rangeText.replace(".", "").replace(",", ".");
-    let lowerBound = parseFloat(rangeText);
-
-    if (isNaN(lowerBound)) continue;
-
-    expenses[lowerBound] = parseFloat(row[1].replace(',', '.')) || 0;
-  }
-
-  let sortedKeys = Object.keys(expenses).map(Number).sort((a, b) => a - b);
-  let sortedExpenses = {};
-  sortedKeys.forEach(key => {
-    sortedExpenses[key] = expenses[key];
-  });
-  expenses = sortedExpenses;
-
-  console.log("Spese ordinate:", expenses);
+  console.log("Coefficienti caricati con precisione massima:", coefficients);
 }
 
 // Seleziona il coefficiente corretto per l'importo e la durata
@@ -114,12 +88,12 @@ function getCoefficientForAmount(amount, duration) {
     selectedKey = keys[keys.length - 1]; // Usa il valore massimo se l'importo è superiore a tutte le soglie
   }
 
-  console.log("Importo:", amount, "Coefficiente selezionato da:", selectedKey, "Durata:", duration, "Valore:", coefficients[selectedKey][duration]);
+  console.log("Importo:", amount, "Coefficiente selezionato da:", selectedKey, "Durata:", duration, "Valore:", coefficients[selectedKey][duration].toFixed(15));
 
   return coefficients[selectedKey]?.[duration] || null;
 }
 
-// Calcolo della rata, spese e costi giornalieri/orari
+// Calcolo della rata con precisione a 15 decimali
 function calculateRent() {
   let importo = parseFloat(document.getElementById("importo").value);
   let durata = parseInt(document.getElementById("durata").value);
@@ -135,7 +109,7 @@ function calculateRent() {
     return;
   }
 
-  let rataMensile = importo * coeff;
+  let rataMensile = (importo * coeff).toFixed(15);
 
   let speseContratto = 0;
   if (Object.keys(expenses).length > 0) {
@@ -151,15 +125,14 @@ function calculateRent() {
     speseContratto = expenses[selectedExpenseKey] || 0;
   }
 
-  // Calcolo costo giornaliero e orario
-  let costoGiornaliero = rataMensile / 22; // Supponiamo 22 giorni lavorativi al mese
-  let costoOrario = costoGiornaliero / 8; // Supponiamo 8 ore lavorative al giorno
+  let costoGiornaliero = (rataMensile / 22).toFixed(15);
+  let costoOrario = (costoGiornaliero / 8).toFixed(15);
 
-  console.log("Importo:", importo, "Rata Mensile:", rataMensile, "Spese selezionate:", speseContratto);
-  console.log("Costo Giornaliero:", costoGiornaliero, "Costo Orario:", costoOrario);
+  console.log("Importo:", importo, "Rata Mensile precisa:", rataMensile, "Spese selezionate:", speseContratto);
+  console.log("Costo Giornaliero preciso:", costoGiornaliero, "Costo Orario preciso:", costoOrario);
 
-  document.getElementById("rataMensile").textContent = rataMensile.toFixed(2) + " €";
+  document.getElementById("rataMensile").textContent = parseFloat(rataMensile).toFixed(2) + " €";
   document.getElementById("speseContratto").textContent = speseContratto.toFixed(2) + " €";
-  document.getElementById("costoGiornaliero").textContent = costoGiornaliero.toFixed(2) + " €";
-  document.getElementById("costoOrario").textContent = costoOrario.toFixed(2) + " €";
+  document.getElementById("costoGiornaliero").textContent = parseFloat(costoGiornaliero).toFixed(2) + " €";
+  document.getElementById("costoOrario").textContent = parseFloat(costoOrario).toFixed(2) + " €";
 }
