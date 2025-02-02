@@ -1,4 +1,4 @@
-// app.js - Versione aggiornata con calcolo costo giornaliero e orario
+// app.js - Corretto calcolo della rata mensile e selezione precisa del coefficiente
 let coefficients = {};
 let expenses = {};
 
@@ -52,6 +52,7 @@ function importCSV(input, type) {
   });
 }
 
+// Caricamento dei coefficienti con gestione precisa dei valori
 function loadCoefficients(data) {
   coefficients = {};
   for (let i = 0; i < data.length; i++) {
@@ -60,23 +61,25 @@ function loadCoefficients(data) {
     let key = parseFloat(row[0].replace(',', '.'));
     if (isNaN(key)) continue;
     coefficients[key] = {
-      12: (parseFloat(row[1].replace(',', '.')) || 0) / 100,
-      18: (parseFloat(row[2].replace(',', '.')) || 0) / 100,
-      24: (parseFloat(row[3].replace(',', '.')) || 0) / 100,
-      36: (parseFloat(row[4].replace(',', '.')) || 0) / 100,
-      48: (parseFloat(row[5].replace(',', '.')) || 0) / 100,
-      60: (parseFloat(row[6].replace(',', '.')) || 0) / 100
+      12: parseFloat(row[1].replace(',', '.')) / 100 || 0,
+      18: parseFloat(row[2].replace(',', '.')) / 100 || 0,
+      24: parseFloat(row[3].replace(',', '.')) / 100 || 0,
+      36: parseFloat(row[4].replace(',', '.')) / 100 || 0,
+      48: parseFloat(row[5].replace(',', '.')) / 100 || 0,
+      60: parseFloat(row[6].replace(',', '.')) / 100 || 0
     };
   }
+  console.log("Coefficienti caricati:", coefficients);
 }
 
+// Caricamento delle spese con estrazione dei limiti inferiori
 function loadExpenses(data) {
   expenses = {};
   for (let i = 0; i < data.length; i++) {
     let row = data[i];
     if (row.length < 2) continue;
-    
-    let rangeText = row[0].split("-")[0].trim(); 
+
+    let rangeText = row[0].split("-")[0].trim();
     rangeText = rangeText.replace(".", "").replace(",", ".");
     let lowerBound = parseFloat(rangeText);
 
@@ -95,20 +98,28 @@ function loadExpenses(data) {
   console.log("Spese ordinate:", expenses);
 }
 
+// Seleziona il coefficiente corretto per l'importo e la durata
 function getCoefficientForAmount(amount, duration) {
   const keys = Object.keys(coefficients).map(Number).sort((a, b) => a - b);
   if (keys.length === 0) return null;
-  let selectedKey = keys[0];
-  for (let k of keys) {
-    if (amount >= k) {
-      selectedKey = k;
-    } else {
+
+  let selectedKey = null;
+  for (let i = 0; i < keys.length; i++) {
+    if (amount <= keys[i]) {
+      selectedKey = keys[i];
       break;
     }
   }
+  if (selectedKey === null) {
+    selectedKey = keys[keys.length - 1]; // Usa il valore massimo se l'importo è superiore a tutte le soglie
+  }
+
+  console.log("Importo:", amount, "Coefficiente selezionato da:", selectedKey, "Durata:", duration, "Valore:", coefficients[selectedKey][duration]);
+
   return coefficients[selectedKey]?.[duration] || null;
 }
 
+// Calcolo della rata, spese e costi giornalieri/orari
 function calculateRent() {
   let importo = parseFloat(document.getElementById("importo").value);
   let durata = parseInt(document.getElementById("durata").value);
@@ -144,8 +155,8 @@ function calculateRent() {
   let costoGiornaliero = rataMensile / 22; // Supponiamo 22 giorni lavorativi al mese
   let costoOrario = costoGiornaliero / 8; // Supponiamo 8 ore lavorative al giorno
 
-  console.log("Importo:", importo, "Spese selezionate:", speseContratto);
-  console.log("Rata Mensile:", rataMensile, "Costo Giornaliero:", costoGiornaliero, "Costo Orario:", costoOrario);
+  console.log("Importo:", importo, "Rata Mensile:", rataMensile, "Spese selezionate:", speseContratto);
+  console.log("Costo Giornaliero:", costoGiornaliero, "Costo Orario:", costoOrario);
 
   document.getElementById("rataMensile").textContent = rataMensile.toFixed(2) + " €";
   document.getElementById("speseContratto").textContent = speseContratto.toFixed(2) + " €";
