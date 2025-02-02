@@ -1,14 +1,22 @@
-// app.js - Aggiornato per leggere CSV invece di Excel
+// app.js - Corretto per leggere solo CSV
 let coefficients = {};
 let expenses = {};
 
-function importCSV(fileInputId, type) {
-    const fileInput = document.getElementById(fileInputId);
-    if (fileInput.files.length === 0) {
+document.addEventListener("DOMContentLoaded", function() {
+    document.getElementById("fileCoefficients").addEventListener("change", function() {
+        importCSV(this, "coefficients");
+    });
+    document.getElementById("fileExpenses").addEventListener("change", function() {
+        importCSV(this, "expenses");
+    });
+});
+
+function importCSV(input, type) {
+    if (input.files.length === 0) {
         alert("Seleziona un file CSV.");
         return;
     }
-    const file = fileInput.files[0];
+    const file = input.files[0];
     if (!file.name.endsWith(".csv")) {
         alert("Formato file non valido. Carica un file CSV.");
         return;
