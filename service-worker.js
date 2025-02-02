@@ -1,27 +1,26 @@
 // service-worker.js
-self.addEventListener("install", (event) => {
-    event.waitUntil(
-        caches.open("flexrentcalc-cache").then((cache) => {
-            return cache.addAll([
-                "./",
-                "./index.html",
-                "./style.css",
-                "./app.js",
-                "./manifest.json"
-            ]);
-        })
-    );
-    self.skipWaiting(); // Forza l'attivazione immediata del nuovo service worker
+
+// Forza l'attivazione immediata del nuovo service worker
+self.addEventListener('install', event => {
+  self.skipWaiting();
 });
 
-self.addEventListener("activate", (event) => {
-    event.waitUntil(self.clients.claim()); // Garantisce il controllo immediato della PWA da parte del nuovo SW
+self.addEventListener('activate', event => {
+  event.waitUntil(
+    caches.keys().then(cacheNames => {
+      return Promise.all(
+        cacheNames.map(cacheName => {
+          console.log('Cancellazione cache:', cacheName);
+          return caches.delete(cacheName);
+        })
+      );
+    }).then(() => self.clients.claim())
+  );
 });
 
-self.addEventListener("fetch", (event) => {
-    event.respondWith(
-        caches.match(event.request).then((response) => {
-            return response || fetch(event.request);
-        })
-    );
+self.addEventListener('fetch', event => {
+  // In questo esempio si tenta sempre il fetch dalla rete; in caso di errore si risponde dalla cache
+  event.respondWith(
+    fetch(event.request).catch(() => caches.match(event.request))
+  );
 });
