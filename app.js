@@ -117,15 +117,34 @@ function calculateRent() {
 
   let rataMensile = importo * coeff;
 
-  // Se l'importo è inferiore a 5000, le spese di contratto sono forzate a 75€,
-  // altrimenti viene cercata la spesa appropriata
-  let speseContratto;
-  if (importo < 5000) {
-    speseContratto = 75;
+  // Calcolo delle spese di contratto secondo i range definiti nel CSV:
+  // Ad esempio, il CSV dovrebbe contenere:
+  // < 5000    → 75
+  // 5000     → 100 (cioè da 5001 a 10000)
+  // 10000    → 150 (da 10001 a 25000)
+  // 25000    → 225 (da 25001 a 50000)
+  // 50000    → 300 (da 50001 a 100000)
+  // > 100000  → 300
+  let speseContratto = 0;
+  if (Object.keys(expenses).length > 0) {
+    // Ordina le chiavi dei range delle spese in ordine crescente
+    let expenseKeys = Object.keys(expenses).map(Number).sort((a, b) => a - b);
+    let selectedExpenseKey = null;
+    // Scorri le chiavi e seleziona il primo range per cui l'importo è minore o uguale
+    for (let k of expenseKeys) {
+      if (importo <= k) {
+        selectedExpenseKey = k;
+        break;
+      }
+    }
+    // Se l'importo supera tutti i range, usa il più alto disponibile
+    if (selectedExpenseKey === null) {
+      selectedExpenseKey = expenseKeys[expenseKeys.length - 1];
+    }
+    speseContratto = expenses[selectedExpenseKey];
   } else {
-    speseContratto = Object.entries(expenses)
-      .filter(([range, value]) => importo >= parseFloat(range))
-      .sort((a, b) => parseFloat(b[0]) - parseFloat(a[0]))[0]?.[1] || 0;
+    // In assenza di dati CSV per le spese, puoi decidere un valore di default
+    speseContratto = 0;
   }
 
   document.getElementById("rataMensile").textContent = rataMensile.toFixed(2) + " €";
