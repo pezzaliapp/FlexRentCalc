@@ -1,11 +1,9 @@
-// app.js - Versione aggiornata per leggere file CSV con gestione avanzata
+// app.js - Versione aggiornata con ricerca del coefficiente più vicino
+
 let coefficients = {};
 let expenses = {};
 
 document.addEventListener("DOMContentLoaded", function() {
-    // Assicurati che gli input abbiano questi ID anche nel file HTML:
-    // <input type="file" id="fileCoefficients" />
-    // <input type="file" id="fileExpenses" />
     document.getElementById("fileCoefficients").addEventListener("change", function() {
         importCSV(this, "coefficients");
     });
@@ -27,7 +25,7 @@ function importCSV(input, type) {
     const reader = new FileReader();
     reader.onload = function (event) {
         try {
-            // Rimuove eventuale BOM e uniforma i ritorni a capo
+            // Rimuove BOM ed uniforma i ritorni a capo
             let csvText = event.target.result.replace(/^\uFEFF/, '').replace(/\r/g, '');
             console.log("CSV caricato:", csvText);
             
@@ -35,15 +33,15 @@ function importCSV(input, type) {
             const csvData = csvText.split("\n").map(row => row.split(/[,;]+/));
             console.log("Dati CSV elaborati:", csvData);
             
-            // Gestione dei coefficienti (si assume che la prima riga sia l'intestazione)
             if (type === "coefficients") {
                 coefficients = {};
+                // Si assume che la prima riga sia l'intestazione
                 for (let i = 1; i < csvData.length; i++) {
                     let row = csvData[i];
                     if (row.length < 7) continue; // Salta righe incomplete
-                    let importo = parseFloat(row[0].replace(',', '.'));
-                    if (isNaN(importo)) continue;
-                    coefficients[importo] = {
+                    let imp = parseFloat(row[0].replace(',', '.'));
+                    if (isNaN(imp)) continue;
+                    coefficients[imp] = {
                         12: parseFloat(row[1].replace(',', '.')) || 0,
                         18: parseFloat(row[2].replace(',', '.')) || 0,
                         24: parseFloat(row[3].replace(',', '.')) || 0,
@@ -53,20 +51,21 @@ function importCSV(input, type) {
                     };
                 }
                 alert("Coefficienti caricati correttamente!");
-            } 
-            // Gestione delle spese di contratto (si assume che la prima riga sia l'intestazione)
-            else if (type === "expenses") {
+                console.log("Coefficienti:", coefficients);
+            } else if (type === "expenses") {
                 expenses = {};
+                // Si assume che la prima riga sia l'intestazione
                 for (let i = 1; i < csvData.length; i++) {
                     let row = csvData[i];
                     if (row.length < 2) continue;
-                    let importoBeni = parseFloat(row[0].replace(',', '.'));
-                    let spesaContratto = parseFloat(row[1].replace(',', '.'));
-                    if (!isNaN(importoBeni) && !isNaN(spesaContratto)) {
-                        expenses[importoBeni] = spesaContratto;
+                    let impBeni = parseFloat(row[0].replace(',', '.'));
+                    let spesa = parseFloat(row[1].replace(',', '.'));
+                    if (!isNaN(impBeni) && !isNaN(spesa)) {
+                        expenses[impBeni] = spesa;
                     }
                 }
                 alert("Spese di contratto caricate correttamente!");
+                console.log("Expenses:", expenses);
             }
         } catch (error) {
             console.error("Errore nella lettura del file CSV:", error);
@@ -74,6 +73,35 @@ function importCSV(input, type) {
         }
     };
     reader.readAsText(file);
+}
+
+/**
+ * Cerca il coefficiente per l'importo inserito.
+ * Restituisce il coefficiente associato alla chiave più alta
+ * che sia minore o uguale all'importo.
+ */
+function getCoefficientForAmount(amount, duration) {
+    // Ottieni le chiavi (importi) come numeri e ordinale in modo crescente
+    const keys = Object.keys(coefficients).map(Number).sort((a, b) => a - b);
+    if (keys.length === 0) return null;
+    
+    // Se l'importo è inferiore alla chiave minima, non troviamo dati
+    if (amount < keys[0]) return null;
+    
+    // Trova la chiave più grande che sia minore o uguale all'importo
+    let selectedKey = keys[0];
+    for (let i = 0; i < keys.length; i++) {
+        if (keys[i] <= amount) {
+            selectedKey = keys[i];
+        } else {
+            break;
+        }
+    }
+    // Verifica se per quella chiave esiste il coefficiente per la durata richiesta
+    if (coefficients[selectedKey] && coefficients[selectedKey][duration]) {
+        return coefficients[selectedKey][duration];
+    }
+    return null;
 }
 
 function calculateRent() {
@@ -85,17 +113,19 @@ function calculateRent() {
         return;
     }
     
-    if (!coefficients[importo] || !coefficients[importo][durata]) {
+    // Ottieni il coefficiente usando la funzione di ricerca
+    let coeff = getCoefficientForAmount(importo, durata);
+    if (!coeff) {
         alert("Dati mancanti per l'importo selezionato. Carica un file CSV valido.");
         return;
     }
     
-    let coeff = coefficients[importo][durata];
     let rataMensile = importo * coeff;
-
-    // Cerca il range più appropriato per le spese di contratto
-    let speseContratto = Object.entries(expenses).find(([range, value]) =>
-        importo >= parseFloat(range))?.[1] || 0;
+    
+    // Cerca la spesa di contratto: usa il range più adeguato
+    let speseContratto = Object.entries(expenses)
+        .filter(([range, value]) => importo >= parseFloat(range))
+        .sort((a, b) => parseFloat(b[0]) - parseFloat(a[0]))[0]?.[1] || 0;
     
     document.getElementById("rataMensile").textContent = rataMensile.toFixed(2) + " €";
     document.getElementById("speseContratto").textContent = speseContratto.toFixed(2) + " €";
