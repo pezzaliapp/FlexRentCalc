@@ -52,6 +52,32 @@ function importCSV(input, type) {
   });
 }
 
+// Caricamento delle spese di contratto
+function loadExpenses(data) {
+  expenses = {};
+  for (let i = 0; i < data.length; i++) {
+    let row = data[i];
+    if (row.length < 2) continue;
+
+    let rangeText = row[0].split("-")[0].trim();
+    rangeText = rangeText.replace(".", "").replace(",", ".");
+    let lowerBound = parseFloat(rangeText);
+
+    if (isNaN(lowerBound)) continue;
+
+    expenses[lowerBound] = parseFloat(row[1].replace(",", ".")) || 0;
+  }
+
+  let sortedKeys = Object.keys(expenses).map(Number).sort((a, b) => a - b);
+  let sortedExpenses = {};
+  sortedKeys.forEach(key => {
+    sortedExpenses[key] = expenses[key];
+  });
+  expenses = sortedExpenses;
+
+  console.log("Spese ordinate:", expenses);
+}
+
 // Caricamento dei coefficienti con precisione massima
 function loadCoefficients(data) {
   coefficients = {};
@@ -90,49 +116,4 @@ function getCoefficientForAmount(amount, duration) {
   console.log("Importo:", amount, "Coefficiente esatto da:", selectedKey, "Durata:", duration, "Valore preciso:", coefficients[selectedKey][duration]);
 
   return coefficients[selectedKey]?.[duration] || null;
-}
-
-// Calcolo della rata con coefficiente ad alta precisione
-function calculateRent() {
-  let importo = parseFloat(document.getElementById("importo").value);
-  let durata = parseInt(document.getElementById("durata").value);
-
-  if (!importo || !durata) {
-    alert("Inserisci un importo e seleziona una durata.");
-    return;
-  }
-
-  let coeff = getCoefficientForAmount(importo, durata);
-  if (!coeff) {
-    alert("Dati mancanti per l'importo selezionato. Carica un file CSV valido.");
-    return;
-  }
-
-  let rataMensile = (importo * coeff).toFixed(10); // Manteniamo alta precisione nei calcoli
-
-  let speseContratto = 0;
-  if (Object.keys(expenses).length > 0) {
-    let expenseKeys = Object.keys(expenses).map(Number).sort((a, b) => a - b);
-    let selectedExpenseKey = expenseKeys[0];
-    for (let k of expenseKeys) {
-      if (importo >= k) {
-        selectedExpenseKey = k;
-      } else {
-        break;
-      }
-    }
-    speseContratto = expenses[selectedExpenseKey] || 0;
-  }
-
-  // Calcolo costo giornaliero e orario
-  let costoGiornaliero = (rataMensile / 22).toFixed(10);
-  let costoOrario = (costoGiornaliero / 8).toFixed(10);
-
-  console.log("Importo:", importo, "Rata Mensile precisa:", rataMensile, "Spese selezionate:", speseContratto);
-  console.log("Costo Giornaliero preciso:", costoGiornaliero, "Costo Orario preciso:", costoOrario);
-
-  document.getElementById("rataMensile").textContent = parseFloat(rataMensile).toFixed(2) + " €";
-  document.getElementById("speseContratto").textContent = speseContratto.toFixed(2) + " €";
-  document.getElementById("costoGiornaliero").textContent = parseFloat(costoGiornaliero).toFixed(2) + " €";
-  document.getElementById("costoOrario").textContent = parseFloat(costoOrario).toFixed(2) + " €";
 }
