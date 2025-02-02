@@ -35,9 +35,14 @@
 <body>
     <h1>FlexRentCalc</h1>
 
-    <input type="file" id="fileUpload" accept=".xlsx">
+    <h3>Carica i file di coefficienti e spese</h3>
+    <label>Coefficienti BCC:</label>
+    <input type="file" id="fileCoefficients" accept=".xlsx">
     <button onclick="importCoefficients()">Carica Coefficienti</button>
-    <button onclick="toggleManualEntry()">Inserimento Manuale</button>
+
+    <label>Spese di Contratto:</label>
+    <input type="file" id="fileExpenses" accept=".xlsx">
+    <button onclick="importExpenses()">Carica Spese</button>
 
     <h2>Seleziona la durata</h2>
     <select id="durata">
@@ -53,13 +58,6 @@
     <input type="number" id="importo" placeholder="Inserisci importo">
 
     <button onclick="calculateRent()">Calcola Noleggio</button>
-
-    <div id="manualEntry" class="hidden">
-        <h2>Inserisci Coefficienti Manualmente</h2>
-        <input type="number" id="importoManual" placeholder="Importo">
-        <input type="number" id="coefficiente" placeholder="Coefficiente">
-        <button onclick="addCoefficient()">Aggiungi</button>
-    </div>
 
     <h2>Risultati</h2>
     <p>Rata Mensile: <span id="rataMensile">-</span></p>
