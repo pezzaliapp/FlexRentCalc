@@ -1,10 +1,11 @@
 // app.js
 let coefficients = {};
+let expenses = {};
 
 function importCoefficients() {
-    const fileInput = document.getElementById("fileUpload");
+    const fileInput = document.getElementById("fileCoefficients");
     if (fileInput.files.length === 0) {
-        alert("Seleziona un file Excel.");
+        alert("Seleziona un file di coefficienti.");
         return;
     }
     const file = fileInput.files[0];
@@ -17,24 +18,56 @@ function importCoefficients() {
             const jsonData = XLSX.utils.sheet_to_json(sheet, { header: 1 });
 
             coefficients = {};
-            for (let i = 2; i < jsonData.length; i++) {
+            let startIndex = jsonData.findIndex(row => row.includes("Importo")) + 1;
+            
+            for (let i = startIndex; i < jsonData.length; i++) {
                 let row = jsonData[i];
-                let importo = row[1];
-                if (!importo || isNaN(importo)) continue;
+                let importo = parseFloat(row[0]);
+                if (isNaN(importo)) continue;
                 coefficients[importo] = {
-                    12: row[2] || 0,
-                    18: row[3] || 0,
-                    24: row[4] || 0,
-                    36: row[5] || 0,
-                    48: row[6] || 0,
-                    60: row[7] || 0
+                    12: parseFloat(row[1]) || 0,
+                    18: parseFloat(row[2]) || 0,
+                    24: parseFloat(row[3]) || 0,
+                    36: parseFloat(row[4]) || 0,
+                    48: parseFloat(row[5]) || 0,
+                    60: parseFloat(row[6]) || 0
                 };
             }
-            console.log("Coefficienti caricati:", coefficients);
             alert("Coefficienti caricati correttamente!");
         } catch (error) {
             console.error("Errore nel caricamento del file Excel:", error);
-            alert("Errore nel caricamento del file. Controlla la struttura del file Excel.");
+            alert("Errore nel caricamento del file di coefficienti.");
+        }
+    };
+    reader.readAsArrayBuffer(file);
+}
+
+function importExpenses() {
+    const fileInput = document.getElementById("fileExpenses");
+    if (fileInput.files.length === 0) {
+        alert("Seleziona un file delle spese di contratto.");
+        return;
+    }
+    const file = fileInput.files[0];
+    const reader = new FileReader();
+    reader.onload = function (event) {
+        try {
+            const data = new Uint8Array(event.target.result);
+            const workbook = XLSX.read(data, { type: "array" });
+            const sheet = workbook.Sheets[workbook.SheetNames[0]];
+            const jsonData = XLSX.utils.sheet_to_json(sheet, { header: 1 });
+
+            expenses = {};
+            for (let i = 1; i < jsonData.length; i++) {
+                let row = jsonData[i];
+                let range = row[0]; 
+                let spesa = parseFloat(row[1]);
+                expenses[range] = spesa;
+            }
+            alert("Spese di contratto caricate correttamente!");
+        } catch (error) {
+            console.error("Errore nel caricamento del file Excel:", error);
+            alert("Errore nel caricamento del file delle spese.");
         }
     };
     reader.readAsArrayBuffer(file);
@@ -50,38 +83,19 @@ function calculateRent() {
     }
 
     if (!coefficients[importo] || !coefficients[importo][durata]) {
-        alert("Dati mancanti per l'importo selezionato. Assicurati di aver caricato un file valido.");
+        alert("Dati mancanti per l'importo selezionato. Assicurati di aver caricato il file corretto.");
         return;
     }
 
     let coeff = coefficients[importo][durata];
     let rataMensile = importo * coeff;
-    let speseContratto = importo < 5000 ? 75 : importo < 10000 ? 100 : importo < 25000 ? 150 : importo < 50000 ? 225 : 300;
-    let costoGiornaliero = rataMensile / 22;
-    let costoOrario = costoGiornaliero / 8;
+
+    let speseContratto = Object.entries(expenses).find(([range, value]) =>
+        range.includes("<") ? importo < parseFloat(range.replace("< ", "")) :
+        range.includes("-") ? importo >= parseFloat(range.split("-")[0]) && importo <= parseFloat(range.split("-")[1]) :
+        importo >= parseFloat(range)
+    )?.[1] || 0;
 
     document.getElementById("rataMensile").textContent = rataMensile.toFixed(2) + " €";
     document.getElementById("speseContratto").textContent = speseContratto.toFixed(2) + " €";
-    document.getElementById("costoGiornaliero").textContent = costoGiornaliero.toFixed(2) + " €";
-    document.getElementById("costoOrario").textContent = costoOrario.toFixed(2) + " €";
-}
-
-function toggleManualEntry() {
-    const manualEntry = document.getElementById("manualEntry");
-    manualEntry.style.display = manualEntry.style.display === "none" ? "block" : "none";
-}
-
-function addCoefficient() {
-    let importo = parseFloat(document.getElementById("importoManual").value);
-    let durata = parseInt(document.getElementById("durata").value);
-    let coefficiente = parseFloat(document.getElementById("coefficiente").value);
-
-    if (!importo || !durata || !coefficiente) {
-        alert("Inserisci tutti i valori.");
-        return;
-    }
-
-    if (!coefficients[importo]) coefficients[importo] = {};
-    coefficients[importo][durata] = coefficiente;
-    alert("Coefficiente aggiunto manualmente!");
 }
