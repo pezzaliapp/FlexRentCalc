@@ -14,7 +14,7 @@ Il calcolo si basa su due file CSV:
 - **Coefficienti:** Definisce i coefficienti applicati in base all'importo e alla durata del prestito.
 - **Spese di Contratto:** Specifica le spese aggiuntive in base a soglie d'importo.
 
-I dati vengono salvati nel `localStorage` per facilitare il riutilizzo senza dover ricaricare i file CSV.
+I dati possono essere salvati nel `localStorage` per facilitare il riutilizzo senza dover ricaricare i file CSV, attivando una funzione disattivata in open source.
 
 ## Caratteristiche
 
