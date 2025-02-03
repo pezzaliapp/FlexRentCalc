@@ -61,14 +61,16 @@ I dati possono essere salvati nel `localStorage` per facilitare il riutilizzo se
    git clone https://github.com/tuo-username/nome-del-repository.git
    cd nome-del-repository
 
-	2.	Verificare l’inclusione della libreria PapaParse
+2.	Verificare l’inclusione della libreria PapaParse
+   
 Assicurati che nel file index.html sia presente il riferimento a PapaParse, ad esempio:
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
 <script src="app.js"></script>
 
 
-	3.	Avviare l’applicazione
+3.	Avviare l’applicazione
+   
 	•	Apri il file index.html in un browser.
 	•	In alternativa, utilizza un server locale (ad es. Live Server per Visual Studio Code) per eseguire l’applicazione.
 
