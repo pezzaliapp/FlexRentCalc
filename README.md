@@ -5,6 +5,7 @@ Descrizione
 
 Questo progetto è una semplice applicazione web realizzata in JavaScript che consente di calcolare la rata mensile di un prestito, includendo il calcolo delle spese di contratto e la determinazione dei costi giornalieri e orari.
 Il calcolo si basa su due file CSV:
+
 •	Coefficienti: Definisce i coefficienti applicati in base all’importo e alla durata del prestito.
 •	Spese di Contratto: Specifica le spese aggiuntive in base a soglie d’importo.
 
