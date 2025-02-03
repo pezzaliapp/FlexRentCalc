@@ -68,7 +68,6 @@ Assicurati che nel file index.html sia presente il riferimento a PapaParse, ad e
 <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
 <script src="app.js"></script>
 
-
 3.	Avviare l’applicazione
    
 	•	Apri il file index.html in un browser.
