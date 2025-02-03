@@ -73,6 +73,24 @@ function loadCoefficients(data) {
   console.log("Coefficienti caricati:", coefficients);
 }
 
+// Caricamento delle spese di contratto dal CSV
+function loadExpenses(data) {
+  expenses = {};
+  for (let i = 0; i < data.length; i++) {
+    let row = data[i];
+    // Supponiamo che il CSV abbia almeno due colonne: soglia e spesa
+    if (row.length < 2) continue;
+    
+    let key = parseFloat(row[0].replace('.', '').replace(',', '.'));
+    if (isNaN(key)) continue;
+    
+    let expenseValue = parseFloat(row[1].replace(',', '.')) || 0;
+    
+    expenses[key] = expenseValue;
+  }
+  console.log("Spese caricate:", expenses);
+}
+
 // Seleziona il coefficiente corretto per l'importo e la durata
 function getCoefficientForAmount(amount, duration) {
   const keys = Object.keys(coefficients).map(Number).sort((a, b) => a - b);
@@ -126,7 +144,7 @@ function calculateRent() {
 
   // Calcolo costo giornaliero e orario
   let costoGiornaliero = rataMensile / 22; // Supponiamo 22 giorni lavorativi al mese
-  let costoOrario = costoGiornaliero / 8; // Supponiamo 8 ore lavorative al giorno
+  let costoOrario = costoGiornaliero / 8;    // Supponiamo 8 ore lavorative al giorno
 
   console.log("Importo:", importo, "Rata Mensile:", rataMensile, "Spese selezionate:", speseContratto);
   console.log("Costo Giornaliero:", costoGiornaliero, "Costo Orario:", costoOrario);
