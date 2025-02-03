@@ -1,4 +1,4 @@
-*FlexRentCalc
+# FlexRentCalc
 # Calcolo Rata Mensile e Spese di Contratto
 
 ## Descrizione
