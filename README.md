@@ -133,5 +133,5 @@ Vedi il file LICENSE per ulteriori dettagli.
 Contatti
 
 Per domande o ulteriori informazioni, puoi scrivere a:
-pezzalialssandro@gmail.com
+pezzalialessandro@gmail.com
 
