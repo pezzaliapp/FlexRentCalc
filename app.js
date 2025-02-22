@@ -78,7 +78,6 @@ function loadExpenses(data) {
   expenses = {};
   for (let i = 0; i < data.length; i++) {
     let row = data[i];
-    // Supponiamo che il CSV abbia almeno due colonne: soglia e spesa
     if (row.length < 2) continue;
     
     let key = parseFloat(row[0].replace('.', '').replace(',', '.'));
@@ -142,9 +141,8 @@ function calculateRent() {
     speseContratto = expenses[selectedExpenseKey] || 0;
   }
 
-  // Calcolo costo giornaliero e orario
-  let costoGiornaliero = rataMensile / 22; // Supponiamo 22 giorni lavorativi al mese
-  let costoOrario = costoGiornaliero / 8;    // Supponiamo 8 ore lavorative al giorno
+  let costoGiornaliero = rataMensile / 22;
+  let costoOrario = costoGiornaliero / 8;
 
   console.log("Importo:", importo, "Rata Mensile:", rataMensile, "Spese selezionate:", speseContratto);
   console.log("Costo Giornaliero:", costoGiornaliero, "Costo Orario:", costoOrario);
@@ -153,4 +151,21 @@ function calculateRent() {
   document.getElementById("speseContratto").textContent = speseContratto.toFixed(2) + " €";
   document.getElementById("costoGiornaliero").textContent = costoGiornaliero.toFixed(2) + " €";
   document.getElementById("costoOrario").textContent = costoOrario.toFixed(2) + " €";
+}
+
+// Funzione per inviare i risultati su WhatsApp
+function sendWhatsApp() {
+  const rataMensile = document.getElementById("rataMensile").textContent;
+  const speseContratto = document.getElementById("speseContratto").textContent;
+  const costoGiornaliero = document.getElementById("costoGiornaliero").textContent;
+  const costoOrario = document.getElementById("costoOrario").textContent;
+
+  const messaggio = `Ecco i risultati del calcolo del noleggio:\n\n` +
+    `Rata Mensile: ${rataMensile}\n` +
+    `Spese Contratto: ${speseContratto}\n` +
+    `Costo Giornaliero: ${costoGiornaliero}\n` +
+    `Costo Orario: ${costoOrario}`;
+
+  const url = `https://wa.me/?text=${encodeURIComponent(messaggio)}`;
+  window.open(url, '_blank');
 }
